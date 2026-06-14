@@ -7,8 +7,9 @@ import { useContractData } from '@/hooks/useContractData';
 import { useTransaction } from '@/hooks/useTransaction';
 import { breed as breedTx, conjure as conjureTx, fetchScions, Scion } from '@/lib/contract';
 import { CenteredHeader } from '@/components/CenteredHeader';
-import { ClayHero } from '@/components/ClayHero';
-import { HowItWorks } from '@/components/HowItWorks';
+import { NurseryBand } from '@/components/NurseryBand';
+import { StatsBand } from '@/components/StatsBand';
+import { AlternatingExplainer } from '@/components/AlternatingExplainer';
 import { ScionCard } from '@/components/ScionCard';
 import { ScionCardSkeleton, SlowNote } from '@/components/Skeleton';
 import { LineageTree } from '@/components/LineageTree';
@@ -174,18 +175,45 @@ export default function Page() {
       <CenteredHeader wallet={wallet} />
 
       <main>
-        <ClayHero
+        {/* 1. COMPACT NURSERY: live data + actions + latest hatchlings at the very top */}
+        <NurseryBand
           stats={data.stats}
+          scions={data.scions}
           loading={data.loading}
           onConjure={openConjure}
           onBreed={openBreed}
           canBreed={canBreed}
         />
 
-        <HowItWorks />
+        {/* 2. STATS BAND: three chunky clay stat tiles */}
+        <StatsBand stats={data.stats} loading={data.loading} />
 
-        {/* THE MENAGERIE */}
-        <section className="section" id="menagerie" aria-labelledby="menagerie-title" style={{ paddingBottom: 40 }}>
+        {/* 3. LINEAGE TREE: the dominant centerpiece, placed high */}
+        <section className="section" id="lineage" aria-labelledby="lineage-title" style={{ paddingTop: 28 }}>
+          <div className="shell">
+            <p className="eyebrow">The centerpiece</p>
+            <h2 id="lineage-title" style={{ fontSize: 'clamp(30px, 4.4vw, 48px)', marginTop: 8 }}>
+              The branching genealogy
+            </h2>
+            <p style={{ marginTop: 10, color: 'var(--ink-mid)', maxWidth: 620, lineHeight: 1.6 }}>
+              Every cross threads its child up to both parents. Follow the lineage as it grows.
+            </p>
+            <div style={{ marginTop: 26 }}>
+              {data.error && data.scions.length === 0 ? (
+                <ErrorState message={data.error} diagnostic={data.diagnostic} onRetry={() => data.refresh()} />
+              ) : data.scions.length === 0 ? (
+                <div className="clay" style={{ padding: '52px 28px', textAlign: 'center', color: 'var(--ink-muted)' }}>
+                  The tree takes root once the first scions are conjured.
+                </div>
+              ) : (
+                <LineageTree scions={data.scions} />
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* 4. THE MENAGERIE: all creatures as clay cards, below the tree */}
+        <section className="section" id="menagerie" aria-labelledby="menagerie-title" style={{ paddingTop: 20, paddingBottom: 40 }}>
           <div className="shell">
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
               <div>
@@ -235,24 +263,8 @@ export default function Page() {
           </div>
         </section>
 
-        {/* LINEAGE TREE */}
-        <section className="section" id="lineage" aria-labelledby="lineage-title" style={{ paddingTop: 20 }}>
-          <div className="shell">
-            <p className="eyebrow">Lineage</p>
-            <h2 id="lineage-title" style={{ fontSize: 'clamp(28px, 4vw, 42px)', marginTop: 8 }}>
-              The branching genealogy
-            </h2>
-            <div style={{ marginTop: 24 }}>
-              {data.scions.length === 0 ? (
-                <div className="clay" style={{ padding: '40px 28px', textAlign: 'center', color: 'var(--ink-muted)' }}>
-                  The tree takes root once the first scions are conjured.
-                </div>
-              ) : (
-                <LineageTree scions={data.scions} />
-              )}
-            </div>
-          </div>
-        </section>
+        {/* 5. EXPLAINER: alternating left/right rows, placed low near the footer */}
+        <AlternatingExplainer />
       </main>
 
       <ClaySlabFooter />
